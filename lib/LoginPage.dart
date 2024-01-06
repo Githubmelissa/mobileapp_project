@@ -1,6 +1,7 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'AdminPanel.dart';
 import 'HomeScreen.dart';
 import 'SignupPage.dart';
@@ -101,11 +102,7 @@ class _LoginPageState extends State<LoginPage> {
                         SizedBox(width: 180,),
                         ElevatedButton(
                           onPressed: () {
-                           // authenticateUser(context, _emailController.text, _passwordController.text);
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => AdminPanel()),
-                            );
+                            authenticateUser(context, _emailController.text, _passwordController.text);
                           },
                           child: Text('Login'),
                         ),
@@ -150,16 +147,56 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  void authenticateUser(BuildContext context, String email, String password) {
-    // Implement your authentication logic here
-    // For simplicity, this example considers the login successful if the username and password are not empty
-    if (email.isNotEmpty && password.isNotEmpty) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
+  void authenticateUser(BuildContext context, String email, String password) async {
+    final response = await http.post(
+      Uri.parse('http://10.0.0.15/food/login.php'),
+      body: {
+        'email': email,
+        'password': password,
+      },
+    );
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+
+      if (data.containsKey('id') && data.containsKey('role') && data.containsKey('redirect')) {
+        int customerId = data['id'];
+        String role = data['role'];
+        String redirect = data['redirect'];
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login successful'),
+          ),
+        );
+
+        if (redirect == 'admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => AdminPanel()),
+          );
+        } else if (redirect == 'home') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen()),
+          );
+        }
+      } else if (data.containsKey('error')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['error']),
+          ),
+        );
+      }
     } else {
-      // Show an error message or handle unsuccessful login
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to connect to the server. Please try again later.'),
+        ),
+      );
     }
   }
+
 }

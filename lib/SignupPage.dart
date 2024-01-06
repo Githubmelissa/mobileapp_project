@@ -13,8 +13,8 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   GlobalKey<FormState> _frmkey = GlobalKey();
 
@@ -92,10 +92,10 @@ class _SignupPageState extends State<SignupPage> {
                             ),
                             SizedBox(height: 10),
                             TextFormField(
-                              controller: _firstNameController,
+                              controller: _fullNameController,
                               decoration: InputDecoration(
-                                labelText: 'First Name',
-                                hintText: 'enter your First Name',
+                                labelText: 'Full Name',
+                                hintText: 'enter your Full Name',
                               ),
                               validator: (String? value) {
                                 if (value == null || value.isEmpty) {
@@ -106,14 +106,14 @@ class _SignupPageState extends State<SignupPage> {
                             ),
                             SizedBox(height: 10),
                             TextFormField(
-                              controller: _lastNameController,
+                              controller: _phoneNumberController,
                               decoration: InputDecoration(
-                                labelText: 'Last Name',
-                                hintText: 'enter your Last Name',
+                                labelText: 'Phone Number',
+                                hintText: 'enter your Phone Number',
                               ),
                               validator: (String? value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter your Last Name';
+                                  return 'Please enter your Phone number';
                                 }
                                 return null;
                               },
@@ -142,9 +142,10 @@ class _SignupPageState extends State<SignupPage> {
                                     signUpUser(
                                       _emailController.text,
                                       _passwordController.text,
-                                      _firstNameController.text,
-                                      _lastNameController.text,
+                                      _fullNameController.text,
                                       _addressController.text,
+                                      _phoneNumberController.text,
+
                                     );
                                   } else {
                                     // Show Snackbar if fields are empty
@@ -193,20 +194,19 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  void signUpUser(String username, String password, String fullName,
+  void signUpUser(String email, String password, String fullName,
       String address, String phoneNumber) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.3/API/signup.php'),
-      // Replace with your PHP signup script URL
-      body: {
-        'username': username,
+      Uri.parse('http://10.0.0.15/food/signup.php'),
+      body:{
+        'email': email,  // Update to match your server parameter name
         'password': password,
         'full_name': fullName,
         'address': address,
         'phone_number': phoneNumber,
       },
     );
-
+    print(response.body);
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
 
@@ -219,7 +219,7 @@ class _SignupPageState extends State<SignupPage> {
 
         // If signup is successful, navigate to the home screen or any other page.
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => LoginPage()),
         );
       } else if (data.containsKey('error')) {
         ScaffoldMessenger.of(context).showSnackBar(
