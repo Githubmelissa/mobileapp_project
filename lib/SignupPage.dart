@@ -1,6 +1,9 @@
 import 'dart:convert';  // Add this import
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;  // Add this import
 import 'HomeScreen.dart';
+import 'LoginPage.dart';
 // import 'LoginPage.dart';
 class SignupPage extends StatefulWidget {
   @override
@@ -39,20 +42,23 @@ class _SignupPageState extends State<SignupPage> {
                         borderRadius: BorderRadius.circular(10.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.5), // Set the shadow color
+                            color: Colors.grey.withOpacity(0.5),
+                            // Set the shadow color
                             spreadRadius: 5,
                             blurRadius: 7,
                             offset: Offset(0, 3), // Offset of the shadow
                           ),
                         ],
                       ),
-                      constraints: BoxConstraints(maxWidth: 350.0,maxHeight: 667.0),
+                      constraints: BoxConstraints(
+                          maxWidth: 350.0, maxHeight: 667.0),
                       child: Form(
                         key: _frmkey,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text("SignUp", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+                            Text("SignUp", style: TextStyle(
+                                fontSize: 25, fontWeight: FontWeight.bold)),
                             SizedBox(height: 30,),
                             TextFormField(
                               controller: _emailController,
@@ -60,7 +66,8 @@ class _SignupPageState extends State<SignupPage> {
                                 labelText: 'Email',
                                 hintText: 'enter your email',
                               ),
-                              keyboardType: TextInputType.emailAddress, // Set the keyboard type to email
+                              keyboardType: TextInputType.emailAddress,
+                              // Set the keyboard type to email
                               validator: (String? value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter your email';
@@ -126,11 +133,12 @@ class _SignupPageState extends State<SignupPage> {
                               },
                             ),
                             SizedBox(height: 10),
-                            Row(children:[
+                            Row(children: [
                               SizedBox(width: 170,),
                               ElevatedButton(
                                 onPressed: () {
-                                  if (_frmkey.currentState?.validate() ?? false) {
+                                  if (_frmkey.currentState?.validate() ??
+                                      false) {
                                     signUpUser(
                                       _emailController.text,
                                       _passwordController.text,
@@ -142,7 +150,8 @@ class _SignupPageState extends State<SignupPage> {
                                     // Show Snackbar if fields are empty
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('Please fill in all fields'),
+                                        content: Text(
+                                            'Please fill in all fields'),
                                       ),
                                     );
                                   }
@@ -152,13 +161,15 @@ class _SignupPageState extends State<SignupPage> {
                             ]),
                             SizedBox(height: 5),
                             Row(
-                                children:[
-                                  Text("Already have an account? ",style: TextStyle(fontSize: 12)),
+                                children: [
+                                  Text("Already have an account? ",
+                                      style: TextStyle(fontSize: 12)),
                                   TextButton(
                                     onPressed: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => LoginPage()),
+                                        MaterialPageRoute(
+                                            builder: (context) => LoginPage()),
                                       );
                                     },
                                     child: Text('Login',
@@ -181,9 +192,12 @@ class _SignupPageState extends State<SignupPage> {
 
     );
   }
-  void signUpUser(String username, String password, String fullName, String address, String phoneNumber) async {
+
+  void signUpUser(String username, String password, String fullName,
+      String address, String phoneNumber) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.3/API/signup.php'), // Replace with your PHP signup script URL
+      Uri.parse('http://192.168.1.3/API/signup.php'),
+      // Replace with your PHP signup script URL
       body: {
         'username': username,
         'password': password,
@@ -217,8 +231,10 @@ class _SignupPageState extends State<SignupPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to connect to the server. Please try again later.'),
+          content: Text(
+              'Failed to connect to the server. Please try again later.'),
         ),
       );
     }
   }
+}
