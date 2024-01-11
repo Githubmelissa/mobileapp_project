@@ -197,8 +197,7 @@ class _SignupPageState extends State<SignupPage> {
   void signUpUser(String email, String password, String fullName,
       String address, String phoneNumber) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.10/food/signup.php'),
-
+      Uri.parse('http://10.0.0.15/food/signup.php'),
       body:{
         'email': email,  // Update to match your server parameter name
         'password': password,
