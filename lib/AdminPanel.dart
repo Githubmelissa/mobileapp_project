@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import 'Order.dart';
 
 class AdminPanel extends StatefulWidget {
   AdminPanel({Key? key}) : super(key: key);
@@ -11,7 +16,9 @@ class AdminPanel extends StatefulWidget {
 
 class _AdminPanelState extends State<AdminPanel> {
   List<String> menuItems = []; // List to store menu items
-  List<String> selectedItems = []; // List to store selected items in the order
+  TextEditingController itemNameController = TextEditingController();
+  TextEditingController itemPriceController = TextEditingController();
+  TextEditingController itemDescriptionController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +33,7 @@ class _AdminPanelState extends State<AdminPanel> {
             TabBar(
               tabs: [
                 Tab(text: 'Add Menu Item'),
-                Tab(text: 'Make Order'),
+                Tab(text: 'View Orders'),
               ],
               labelColor: Colors.blue,
               unselectedLabelColor: Colors.grey,
@@ -35,7 +42,7 @@ class _AdminPanelState extends State<AdminPanel> {
               child: TabBarView(
                 children: [
                   _buildAddMenuItemTab(),
-                  _buildMakeOrderTab(),
+                  _buildViewOrdersTab(),
                 ],
               ),
             ),
@@ -47,152 +54,197 @@ class _AdminPanelState extends State<AdminPanel> {
 
   Widget _buildAddMenuItemTab() {
     return Container(
-        decoration: BoxDecoration(
+      decoration: BoxDecoration(
         image: DecorationImage(
-        image: AssetImage('assets/newitem.jpg'),
-    fit: BoxFit.cover,
-    ),
-    ),
-    child: Padding(
-    padding: const EdgeInsets.all(16.0),
-    child: Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-          Text(
-            'Add New Item to Menu',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 20),
-          TextField(
-            decoration: InputDecoration(
-              labelText: 'Item Name',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          SizedBox(height: 10),
-          TextField(
-            decoration: InputDecoration(
-              labelText: 'Item Price',
-              border: OutlineInputBorder(),
-            ),
-            keyboardType: TextInputType.number,
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              // Add the new item to the menu
-              setState(() {
-                menuItems.add(
-                    'New Item'); // Replace with actual logic to add the item
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Item added to the menu'),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              primary: Colors.blue,
-              onPrimary: Colors.white,
-            ),
-            child: Text('Add Item'),
-          ),
-          SizedBox(height: 20),
-          Text(
-            'Current Menu',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: menuItems.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(menuItems[index]),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    )  );
-  }
-
-  Widget _buildMakeOrderTab() {
-
-      return Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/make.jpg'),
-            fit: BoxFit.cover,
-          ),
+          image: AssetImage('assets/newitem.jpg'),
+          fit: BoxFit.cover,
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Make Order',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 20),
-          Text(
-            'Select Items:',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 10),
-          // Build a list of checkboxes for menu items
-          SizedBox(
-            height: 200, // Adjust the height as needed
-            child: ListView.builder(
-              itemCount: menuItems.length,
-              itemBuilder: (context, index) {
-                return CheckboxListTile(
-                  title: Text(
-                    menuItems[index],
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  value: selectedItems.contains(menuItems[index]),
-                  onChanged: (value) {
-                    setState(() {
-                      if (value != null && value) {
-                        selectedItems.add(menuItems[index]);
-                      } else {
-                        selectedItems.remove(menuItems[index]);
-                      }
-                    });
-                  },
-                );
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Add New Item to Menu',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            TextField(
+              controller: itemNameController,
+              decoration: InputDecoration(
+                labelText: 'Item Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              controller: itemDescriptionController,
+              decoration: InputDecoration(
+                labelText: 'Item Description',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              controller: itemPriceController,
+              decoration: InputDecoration(
+                labelText: 'Item Price',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Add the new item to the menu
+                addMenuItem();
               },
+              style: ElevatedButton.styleFrom(
+                primary: Colors.blue,
+                onPrimary: Colors.white,
+              ),
+              child: Text('Add Item'),
             ),
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              // Handle order submission logic
-              if (selectedItems.isNotEmpty) {
-                // Replace this with your actual logic for submitting the order
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Order submitted successfully!'),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Please select items to order.'),
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              primary: Colors.blue,
-              onPrimary: Colors.white,
-            ),
-            child: Text('Submit Order'),
-          ),
-        ],
-          )),
+            // ... (existing code)
+          ],
+        ),
+      ),
     );
   }
+
+  Widget _buildViewOrdersTab() {
+    return FutureBuilder<List<Order>>(
+      future: fetchOrders(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Text('No orders available.');
+        } else {
+          // Orders fetched successfully, display them
+          List<Order> orders = snapshot.data!;
+
+          return Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/make.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'View Orders',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'Orders:',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 10),
+                  // Build a list of orders
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: orders.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(
+                            'Order ID: ${orders[index].orderId}\n'
+                                'User ID: ${orders[index].userId}\n'
+                                'Total Price: \$${orders[index].totalPrice}\n'
+                                'Delivery Address: ${orders[index].deliveryAddress}\n'
+                                'Order Status: ${orders[index].orderStatus}\n'
+                                'Order Date: ${orders[index].orderDate}',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+Future<List<Order>> fetchOrders() async {
+  final response = await http.get(Uri.parse('http://127.0.0.1/food/get_orders.php'));
+
+  if (response.statusCode == 200) {
+    final List<dynamic> data = json.decode(response.body);
+
+    // Convert the JSON data to a list of Order objects
+    List<Order> orders = data.map((json) {
+      return Order(
+        orderId: json['order_id'],
+        userId: json['user_id'],
+        totalPrice: json['total_price'],
+        deliveryAddress: json['delivery_address'],
+        orderStatus: json['order_status'],
+        orderDate: json['order_date'],
+      );
+    }).toList();
+
+    return orders;
+  } else {
+    throw Exception('Failed to load orders');
+  }
+}
+  void addMenuItem() async {
+    final itemName = itemNameController.text;
+    final itemPrice = itemPriceController.text;
+    final itemDescription= itemDescriptionController.text;
+    if (itemName.isNotEmpty && itemPrice.isNotEmpty) {
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1/food/add_menu_item.php'),
+        body: {
+          'item_name': itemName,
+          'item_description': itemDescription,
+          'item_price': itemPrice,
+        },
+      );
+
+
+      print('Response from PHP: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Item added successfully
+        setState(() {
+          menuItems.add(itemName);
+          itemNameController.clear();
+          itemPriceController.clear();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Item added to the menu'),
+          ),
+        );
+      } else {
+        // Failed to add item
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add item. Please try again.'),
+          ),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please enter item name and price.'),
+        ),
+      );
+    }
+  }
+
 }

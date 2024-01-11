@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'AdminPanel.dart';
 import 'HomeScreen.dart';
 import 'SignupPage.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -149,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void authenticateUser(BuildContext context, String email, String password) async {
     final response = await http.post(
-      Uri.parse('http://192.168.1.10/food/login.php'),
+      Uri.parse('http://127.0.0.1/food/login.php'),
       body: {
         'email': email,
         'password': password,
